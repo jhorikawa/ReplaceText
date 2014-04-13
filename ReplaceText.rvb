@@ -1,0 +1,63 @@
+Option Explicit
+'Script written by <Junichiro Horikawa>
+'Script copyrighted by <Junichiro Horikawa>
+'Script version 2011年11月11日 17:31:21
+
+Call Main()
+Sub Main()
+	Dim strText,arrTexts, strVal,strFind,strReplace,intStr,arrObjects
+	
+	Rhino.UnselectAllObjects()
+	arrTexts = Rhino.GetObjects("Select Text Objects to Search", 512,, True)
+	If Not IsArray(arrTexts) Then Exit Sub
+	
+	strFind = Rhino.GetString("Search For...")
+	If IsNull(strFind) Then Exit Sub
+	
+	Rhino.EnableRedraw(False)
+	For Each strText In arrTexts
+		If Rhino.IsText(strText) Then
+			strVal = Rhino.TextObjectText(strText)
+		ElseIf Rhino.IsDimension(strText) Then
+			strVal = Rhino.DimensionUserText(strText)
+		ElseIf Rhino.IsLeader(strText) Then
+			strVal = Rhino.LeaderText(strText)
+		End If
+		
+		If Not IsNull(strVal) Then
+			intStr = InStr(strVal, strFind)
+			If intStr <> 0 Then
+				Rhino.SelectObject(strText)
+			End If
+		End If
+	Next
+	Rhino.EnableRedraw(True)
+	strReplace = Rhino.GetString("Replace With...")
+	If IsNull(strReplace) Then Exit Sub
+	
+	Rhino.EnableRedraw(False)
+	For Each strText In arrTexts
+		If Rhino.IsText(strText) Then
+			strVal = Rhino.TextObjectText(strText)
+		ElseIf Rhino.IsDimension(strText) Then
+			strVal = Rhino.DimensionUserText(strText)
+		ElseIf Rhino.IsLeader(strText) Then
+			strVal = Rhino.LeaderText(strText)
+		End If
+		
+		If Not IsNull(strVal) Then
+			strVal = Replace(strVal, strFind, strReplace)
+			
+			If Rhino.IsText(strText) Then
+				Rhino.TextObjectText strText, strVal
+			ElseIf Rhino.IsDimension(strText) Then
+				Rhino.DimensionUserText strText, strVal
+			ElseIf Rhino.IsLeader(strText) Then
+				Rhino.LeaderText strText, strVal
+			End If
+			
+		End If
+	Next
+	
+	Rhino.EnableRedraw(True)
+End Sub
